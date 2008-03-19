@@ -73,20 +73,58 @@ Net::FireEagle - access Yahoo's new FireEagle developer service
 
 =head1 ABOUT
 
+Fire Eagle is a site that stores information about your location. With 
+your permission, other services and devices can either update that 
+information or access it. By helping applications respond to your 
+location, Fire Eagle is designed to make the world around you more 
+interesting! Use your location to power friend-finders, games, local 
+information services, blog badges and stuff like that...
+
+For more information see http://fireeagle.yahoo.net/
+
+=head1 AUTHENTICATION
+
+For more information read this
+
+http://fireeagle.yahoo.net/developer/documentation/getting_started
+
+but, in short you have to first get an API key from the FireEagle site. 
+Then using this consumer key and consumer secret you have to 
+authenticate the relationship between you and your user. See the script 
+C<fireagle-authorise> for an example of how to do this.
+
+
 =head1 METHODS
 
 =cut
 
-
 =head2 new <opts>
+
+Create a new FireEagle object. This must have the options
+
+=over 4
+
+=item consumer_key 
+
+=item consumer_secret
+
+=back
+
+which you can get at http://fireeagle.yahoo.net/developer/manage
+
+then, when you have your per-user authentication tokens (see above) you 
+can supply
+
+=over 4
+
+=item access_token
+
+=item access_token_secret
+
+=back
 
 =cut
 
-# Initial Constructor:
-# my $fe = Net::FireEagle::Client->new( consumer_key => $consumer_key, consumer_secret => $consumer_secret );
-#
-# Resume previous Fire Eagle oauth, feed access token and secret
-#my $fe2 = Net::FireEagle::Client->new( consumer_key => $consumer_key, consumer_secret => $consumer_secret, access_token => $access_token, access_token_secret => $access_token_secret );
 sub new {
     my $proto  = shift;
     my $class  = ref $proto || $proto;
@@ -140,17 +178,11 @@ sub has_access_token {
 }
 
 # generate a random number 
-# - to be more cryptographically secure we could 
-# use a Mersenne twister or something
 sub _nonce {
     return int( rand( 2**32 ) );
 }
 
-=head2 request_access_token
-
-=cut
-
-sub request_access_token {
+sub _request_access_token {
     my $self = shift;
     print "REQUESTING ACCESS TOKEN\n" if $DEBUG;
     my $access_token_request = Net::OAuth::AccessTokenRequest->new(
@@ -250,7 +282,7 @@ sub get_authorization_url {
 sub clicked_authorization_url {
     my $self = shift;
     return if $self->{authorized};
-    $self->request_access_token;
+    $self->_request_access_token;
     $self->{authorized} = 1;
 }
 
@@ -352,7 +384,7 @@ Copyright 2008 - Simon Wistow and Yahoo! Brickhouse
 
 Distributed under the same terms as Perl itself.
 
-See the COPYING file distributed with this package.
+See L<perlartistic> and L<perlgpl>.
 
 =cut
 
