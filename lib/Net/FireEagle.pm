@@ -61,8 +61,11 @@ Net::FireEagle - access Yahoo's new FireEagle developer service
 
     # Send this to user to grant authorization for this app
     my $auth_url = $fe->authorization_url;
+    # ... and request an access token
+    # Note: you can save these in DB to restore previous Fire Eagle oauth session
+    my ($access_token, $access_token_secret) = $fe->request_access_token;
 
-    # Save these in DB to restore previous Fire Eagle oauth session
+    # Get them back
     my $access_token = $fe->access_token;
     my $access_token_secret = $fe->access_token_secret;
 
