@@ -1,5 +1,5 @@
 Build.PL
-COPYING
+bin/fireeagle
 lib/Net/FireEagle.pm
 MANIFEST			This list of files
 t/00use.t
