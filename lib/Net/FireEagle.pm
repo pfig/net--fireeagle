@@ -67,9 +67,12 @@ Net::FireEagle - access Yahoo's new FireEagle developer service
     my $access_token_secret = $fe->access_token_secret;
 
     # Can't query or update location without authorization
-    my $loc = $fe->location_query;
+    my $loc = $fe->location;                     # returns xml
+    my $loc = $fe->location( format => 'xml'  ); # returns xml
+    my $loc = $fe->location( format => 'json' ); # returns json
 
-    my $return = $fe->location_update( "500 Third St., San Francisco, CA" );
+    # returns result on success. dies or returns undef on failure    
+    my $return = $fe->update_location( "500 Third St., San Francisco, CA" );
 
 =head1 ABOUT
 
@@ -91,7 +94,8 @@ http://fireeagle.yahoo.net/developer/documentation/getting_started
 but, in short you have to first get an API key from the FireEagle site. 
 Then using this consumer key and consumer secret you have to 
 authenticate the relationship between you and your user. See the script 
-C<fireeagle> bundled with this package for an example of how to do this.
+C<fireagle-authorise> for an example of how to do this.
+
 
 =head1 METHODS
 
@@ -168,12 +172,50 @@ sub authorized {
     return 1;
 }
 
+=head2 access_token [access_token]
+
+Returns the current access token.
+
+Can optionally set a new token.
+
+=cut
+
+sub access_token {
+    my $self = shift;
+    $self->{access_token} = shift if $@;
+    return $self->{access_token};
+}
+
+
+=head2 access_token_secret [access_token_secret]
+
+Returns the current access token secret.
+
+Can optionally set a new secret.
+
+=cut
+
+sub access_token_secret {
+    my $self = shift;
+    $self->{access_token_secret} = shift if $@;
+    return $self->{access_token_secret};
+}
+
 # generate a random number 
 sub _nonce {
     return int( rand( 2**32 ) );
 }
 
 =head2 request_access_token
+
+Request the access token and access token secret for this user.
+
+The user must have authorized this app at the url given by
+C<get_authorization_url> first.
+
+Returns the access token and access token secret but also sets 
+them internally so that after calling this method you can 
+immediately call C<location> or C<update_location>.
 
 =cut
 
@@ -261,7 +303,7 @@ sub _request_request_token {
 
 =head2 get_authorization_url
 
-Get the URL to authorize this user.
+Get the URL to authorize a user.
 
 =cut
 
@@ -286,6 +328,8 @@ Options are passed in as a hash and may be one of
 =item format
 
 Either 'xml' or 'json'. Defaults to 'xml'.
+
+=back
 
 =cut
 
@@ -321,7 +365,12 @@ sub location {
     return $user_location_response->content;
 }
 
-=head2 update_location <location>
+=head2 update_location <location> <opt[s]>
+
+Takes a free form string with the new location.
+
+Return the result of the update in either xml or json
+depending on C<opts>.
 
 =cut
 

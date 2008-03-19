@@ -10,6 +10,7 @@ my $build = Module::Build
                           'CGI'                      => '0',
                           'Class::Data::Inheritable' => '0',
                           'Class::Accessor'          => '0',
+                          'JSON::Any'                => '0',
                           'Test::More'               => '0',
                           'Net::OAuth::Request'      => '0.06',
                         },

@@ -38,7 +38,7 @@ and to set your current location
     fireeagle <location>
 
 or you can mix and match command line options and config file options
-(command line will always override confiog file).
+(command line will always override config file).
 
 =head1 ABOUT
 
@@ -156,3 +156,19 @@ sub parse_json {
     die "Couldn't parse JSON for some reason" unless defined $obj;
     return $obj;
 }    
+
+=head1 AUTHOR
+
+Simon Wistow <swistow@sixapart.com>
+
+=head1 COPYRIGHT
+
+Copyright 2008, Simon Wistow
+
+Distributed under the same terms as Perl itself.
+
+=head1 SEE ALSO
+
+L<Net::FireEagle>
+
+=cut
