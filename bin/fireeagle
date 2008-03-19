@@ -1,0 +1,158 @@
+#!perl -w 
+
+use strict;
+use Net::FireEagle;
+use JSON::Any;
+
+=head1 NAME 
+
+fireeagle - simple FireEagle client 
+
+=head1 USAGE
+
+    # to get your user tokens
+    fireeagle consumer_key=<consumer key> consumer_secret=<consumer secret>
+
+    # to get your current location
+    fireeagle consumer_key=<consumer key> consumer_secret=<consumer secret> \
+              access_token=<access token> access_token_secret=<access token secret>
+
+    # to set your current location
+    fireeagle consumer_key=<consumer key> consumer_secret=<consumer secret> \
+              access_token=<access token> access_token_secret=<access token secret> \
+              <location>
+
+or if there is a .fireeagle file in your home directory that looks like
+
+    consumer_key=<consumer key> 
+    consumer_secret=<consumer secret>
+    access_token=<access token> 
+    access_token_secret=<access token secret>
+
+then to get your current location
+
+    fireeagle
+
+and to set your current location
+
+    fireeagle <location>
+
+or you can mix and match command line options and config file options
+(command line will always override confiog file).
+
+=head1 ABOUT
+
+Fire Eagle is a site that stores information about your location. With 
+your permission, other services and devices can either update that 
+information or access it. By helping applications respond to your 
+location, Fire Eagle is designed to make the world around you more 
+interesting! Use your location to power friend-finders, games, local 
+information services, blog badges and stuff like that...
+
+You can find out more about it here
+
+https://fireeagle.yahoo.net/
+
+=cut
+
+my %tokens = get_tokens();
+
+error("You must pass in a consumer key and secret")
+    unless (defined $tokens{consumer_key} && defined $tokens{consumer_secret});
+
+error("You can't just pass an access token and no access token secret") 
+    if (defined $tokens{access_token} && !defined $tokens{access_token_secret});
+
+error("You can't just pass an access token secret and no access token") 
+    if (!defined $tokens{access_token} && defined $tokens{access_token_secret});
+
+# create the FireEagle object
+my $fe = Net::FireEagle->new( %tokens );
+
+# we've got everything we need to interact
+if ($fe->authorized) {
+    my $loc = shift @ARGV;
+    update_location($fe, $loc) if defined $loc;
+    print "Current location: ".get_location($fe)."\n";
+    exit 0;
+}
+
+# right, we need to get their access stuff
+
+print "STEP 1: REQUEST FIREEAGLE AUTHORIZATION FOR THIS APP\n";
+print "\tURL : ".$fe->get_authorization_url."\n";
+print "\n-- Please go to the above URL and authorize the app -- hit <ENTER> when done.";
+my $enter = <STDIN>; print "\n";
+
+my ($access_token, $access_token_secret) = $fe->request_access_token;
+
+print "You have now authorized this app.\n";
+print "Your access token and secret are:\n\n";
+print "access_token=$access_token\n";
+print "access_token_secret=$access_token_secret\n";
+print "\n";
+print "You should note these down or put them in $ENV{HOME}/.fireeagle\n\n";
+
+print "Current location".get_location($fe)."\n";
+
+
+
+sub get_tokens {
+    my @return;
+    # This also needs to try reading from a config file
+    my %tokens = fetch_config();
+    while (@ARGV && $ARGV[0] =~ m!^(\w+)\=(\w+)$!) {
+        $tokens{$1} = $2;
+        shift @ARGV;
+    }
+    return %tokens;
+}
+
+sub fetch_config {
+    my %tokens = ();
+    my $file   = $ENV{HOME}."/.fireeagle";
+    return %tokens unless -f $file;
+
+    open(my $fh, $file) || die "Couldn't open $file: $!\n";
+    while (<$fh>) {
+        chomp;
+        next if /^#/;
+        next if /^\s*$/;
+        next unless /=/;
+        my ($key, $val) = split /\s*=\s*/, $_, 2;
+        $tokens{$key} = $val;
+    }
+    return %tokens;
+}
+
+sub error {
+    my $msg = shift;
+    die "Usage: fireeagle <consumer key> <consumer secrets> [access token] [access token secret] [[location]]\n".
+        "$msg\n";
+}
+
+sub get_location {
+    my $fe   = shift;
+    my $json = $fe->location( format => 'json' );
+    my $obj  = parse_json($json);
+    my $what = $obj->{user}->{location_hierarchy}->[0];
+    return sprintf("%s (accuracy level: %s)", $what->{name}, $what->{level_name});
+}
+
+sub update_location {
+    my ($fe, $loc) = @_;
+    my $json = $fe->update_location($loc, format => 'json');
+    my $obj  = parse_json($json);
+    my $stat = $obj->{stat};
+    die "Couldn't update location" unless defined $stat;
+    die "Couldn't update location: $stat" unless lc($stat) eq 'ok';
+}
+
+sub parse_json {
+    my $json = shift;
+    die "Couldn't parse blank JSON" unless defined $json and $json !~ m!^\s*$!;
+    my $obj  = eval { JSON::Any->new->from_json($json) };
+    die $@ if $@;
+    die "Couldn't parse JSON for some reason" unless defined $obj;
+    return $obj;
+}    

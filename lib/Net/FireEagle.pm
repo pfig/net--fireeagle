@@ -91,8 +91,7 @@ http://fireeagle.yahoo.net/developer/documentation/getting_started
 but, in short you have to first get an API key from the FireEagle site. 
 Then using this consumer key and consumer secret you have to 
 authenticate the relationship between you and your user. See the script 
-C<fireagle-authorise> for an example of how to do this.
-
+C<fireeagle> bundled with this package for an example of how to do this.
 
 =head1 METHODS
 
@@ -137,18 +136,6 @@ sub new {
     # Set up LibWWWPerl for HTTP requests
     $client->{browser} = LWP::UserAgent->new;
 
-    if ( $client->has_access_token ) {
-
-        # Mark as authorized
-        $client->{authorized} = 1;
-    } else {
-
-        # Set up request_token
-        $client->{authorized} = 0;
-        $client->request_request_token;
-        $client->{authorization_url} = $client->get_authorization_url;
-    }
-
     # Client Object
     return $client;
 }
@@ -165,11 +152,15 @@ sub _check {
     }
 }
 
-=head2 has_access_token 
+=head2 authorized
+
+Whether the client has the necessary credentials to be authorized.
+
+Note that the credentials may be wrong and so the request may still fail.
 
 =cut
 
-sub has_access_token {
+sub authorized {
     my $self = shift;
     foreach my $param ( @{ $self->access_token_params } ) {
         if ( not defined $self->{$param} ) { return 0; }
@@ -182,7 +173,11 @@ sub _nonce {
     return int( rand( 2**32 ) );
 }
 
-sub _request_access_token {
+=head2 request_access_token
+
+=cut
+
+sub request_access_token {
     my $self = shift;
     print "REQUESTING ACCESS TOKEN\n" if $DEBUG;
     my $access_token_request = Net::OAuth::AccessTokenRequest->new(
@@ -221,13 +216,12 @@ sub _request_access_token {
 
     die "ERROR: FireEagle did not reply with an access token"
       unless ( $self->{access_token} && $self->{access_token_secret} );
+        
+    return ( $self->{access_token}, $self->{access_token_secret} );
 }
 
-=head2 request_request_token 
 
-=cut
-
-sub request_request_token {
+sub _request_request_token {
     my $self                  = shift;
     my $request_token_request = Net::OAuth::RequestTokenRequest->new(
         consumer_key     => $self->{consumer_key},
@@ -267,36 +261,43 @@ sub request_request_token {
 
 =head2 get_authorization_url
 
+Get the URL to authorize this user.
+
 =cut
 
 sub get_authorization_url {
     my $self = shift;
-    return undef unless $self->{request_token};
+
+    if (!defined $self->{request_token}) {
+        $self->_request_request_token;
+    }
     return $AUTHORIZATION_URL . '?oauth_token=' . $self->{request_token};
 }
 
-=head2 clicked_authorization_url
+
+=head2 location [opt[s]
+
+Get the user's current location.
+
+Options are passed in as a hash and may be one of
+
+=over 4
+
+=item format
+
+Either 'xml' or 'json'. Defaults to 'xml'.
 
 =cut
 
-sub clicked_authorization_url {
+sub location {
     my $self = shift;
-    return if $self->{authorized};
-    $self->_request_access_token;
-    $self->{authorized} = 1;
-}
-
-=head2 location_query
-
-=cut
-
-sub location_query {
-    my $self = shift;
-    return $UNAUTHORIZED unless $self->{authorized};
+    my %opts = @_;
+    die $UNAUTHORIZED unless $self->authorized;
+    my $base = $QUERY_API_URL; $base .= '.'.$opts{format} if defined $opts{format};
     my $user_location_request = Net::OAuth::ProtectedResourceRequest->new(
         consumer_key     => $self->{consumer_key},
         consumer_secret  => $self->{consumer_secret},
-        request_url      => $QUERY_API_URL,
+        request_url      => $base,
         request_method   => 'GET',
         signature_method => $SIGNATURE_METHOD,
         timestamp        => time,
@@ -310,7 +311,7 @@ sub location_query {
       unless $user_location_request->verify;
 
     my $user_location_request_url =
-      $QUERY_API_URL . '?' . $user_location_request->to_post_body;
+      $base . '?' . $user_location_request->to_post_body;
     my $user_location_response =
       $self->{browser}->get($user_location_request_url);
 
@@ -320,18 +321,18 @@ sub location_query {
     return $user_location_response->content;
 }
 
-=head2 location_update <location>
+=head2 update_location <location>
 
 =cut
 
-sub location_update {
-    my ( $self, $location ) = @_;
-    return $UNAUTHORIZED unless $self->{authorized};
-
+sub update_location {
+    my ( $self, $location, %opts ) = @_;
+    die $UNAUTHORIZED unless $self->authorized;
+    my $base = $UPDATE_API_URL; $base .= '.'.$opts{format} if defined $opts{format};
     my $update_location_request = Net::OAuth::ProtectedResourceRequest->new(
         consumer_key     => $self->{consumer_key},
         consumer_secret  => $self->{consumer_secret},
-        request_url      => $UPDATE_API_URL,
+        request_url      => $base,
         request_method   => 'POST',
         signature_method => $SIGNATURE_METHOD,
         timestamp        => time,
@@ -345,7 +346,7 @@ sub location_update {
     die "COULDN'T VERIFY! Check OAuth parameters.\n"
       unless $update_location_request->verify;
 
-    my $update_location_request_url = $UPDATE_API_URL;
+    my $update_location_request_url = $base;
     my $update_location_response =
       $self->{browser}
       ->post( $update_location_request_url, $update_location_request->to_hash );
