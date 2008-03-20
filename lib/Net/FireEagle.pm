@@ -26,7 +26,7 @@ our $AUTHORIZATION_URL = 'https://fireeagle.yahoo.net/oauth/authorize';
 our $ACCESS_TOKEN_URL  = 'https://fireeagle.yahooapis.com/oauth/access_token';
 our $QUERY_API_URL     = 'https://fireeagle.yahooapis.com/api/0.1/user';
 our $UPDATE_API_URL    = 'https://fireeagle.yahooapis.com/api/0.1/update';
-
+our $LOOKUP_API_URL    = 'https://fireeagle.yahooapis.com/api/0.1/lookup';
 our $SIGNATURE_METHOD  = 'HMAC-SHA1';
 our $UNAUTHORIZED      = "Unauthorized.";
 
@@ -364,6 +364,7 @@ depending on C<opts>.
 
 =cut
 
+# TODO make it so that update and lookup can take different location types
 sub update_location {
     my ( $self, $location, %opts ) = @_;
     die $UNAUTHORIZED unless $self->authorized;
@@ -381,6 +382,38 @@ sub update_location {
       unless ( $update_location_response->is_success );
 
     return $update_location_response->content;
+}
+
+=head lookup_location <query> <opt[s]>
+
+Disambiguates potential values for update. Results from lookup can be 
+passed to update to ensure that Fire Eagle will understand how to parse 
+the location parameter.
+
+Return the result of the update in either xml or json
+depending on C<opts>.
+
+=cut
+
+sub lookup_location {
+	my $self  = shift;
+	my $query = shift;
+	my %opts  = @_;
+  
+    die $UNAUTHORIZED unless $self->authorized;
+    my $base = $LOOKUP_API_URL; 
+       $base .= '.'.$opts{format} if defined $opts{format};
+    my $lookup_location_request = $self->_make_request($base, 'GET', { address => $query });
+
+    my $lookup_location_request_url =
+      $base . '?' . $lookup_location_request->to_post_body;
+    my $lookup_location_response =
+      $self->{browser}->get($lookup_location_request_url);
+
+    die $lookup_location_response->status_line
+      unless ( $lookup_location_response->is_success );
+
+    return $lookup_location_response->content;
 }
 
 sub _make_request {

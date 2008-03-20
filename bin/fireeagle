@@ -20,7 +20,7 @@ fireeagle - simple FireEagle client
     # to set your current location
     fireeagle consumer_key=<consumer key> consumer_secret=<consumer secret> \
               access_token=<access token> access_token_secret=<access token secret> \
-              <location>
+              update <location>
 
 or if there is a .fireeagle file in your home directory that looks like
 
@@ -35,7 +35,11 @@ then to get your current location
 
 and to set your current location
 
-    fireeagle <location>
+    fireeagle update <location>
+
+or to search for a location
+
+    fireeagle lookup <location>
 
 or you can mix and match command line options and config file options
 (command line will always override config file).
@@ -55,6 +59,7 @@ https://fireeagle.yahoo.net/
 
 =cut
 
+binmode STDOUT, ":utf8";
 my %tokens = get_tokens();
 
 error("You must pass in a consumer key and secret")
@@ -71,14 +76,22 @@ my $fe = Net::FireEagle->new( %tokens );
 
 # we've got everything we need to interact
 if ($fe->authorized) {
-    my $loc = shift @ARGV;
-    update_location($fe, $loc) if defined $loc;
+    my $method = lc(shift @ARGV);
+    if (defined $method && $method !~ m!^\s*$! && $method ne 'location') {
+        my $loc = shift @ARGV || die "You must pass a location to method $method\n";
+        if ($method eq 'lookup') {
+            lookup_location($fe, $loc);
+        } elsif ($method eq 'update') {
+            update_location($fe, $loc);
+        } else {
+            die "Unknown method $method\n";
+        }
+    }
     print "Current location: ".get_location($fe)."\n";
     exit 0;
 }
 
 # right, we need to get their access stuff
-
 print "STEP 1: REQUEST FIREEAGLE AUTHORIZATION FOR THIS APP\n";
 print "\tURL : ".$fe->get_authorization_url."\n";
 print "\n-- Please go to the above URL and authorize the app -- hit <ENTER> when done.";
@@ -156,6 +169,18 @@ sub parse_json {
     die "Couldn't parse JSON for some reason" unless defined $obj;
     return $obj;
 }    
+
+sub lookup_location {
+    my ($fe, $loc) = @_;
+    my $json = $fe->lookup_location($loc, format => 'json');
+    my $obj  = parse_json($json);
+    my $stat = $obj->{stat};
+    die "Couldn't lookup location" unless defined $stat;
+    die "Couldn't lookup location: $stat" unless lc($stat) eq 'ok';
+    print "Did you mean? - \n";
+    print join("\n", map { " ".$_->{name} } @{$obj->{locations}})."\n";
+    exit 0;
+}
 
 =head1 AUTHOR
 
