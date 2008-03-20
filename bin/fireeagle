@@ -106,7 +106,7 @@ print "access_token_secret=$access_token_secret\n";
 print "\n";
 print "You should note these down or put them in $ENV{HOME}/.fireeagle\n\n";
 
-print "Current location".get_location($fe)."\n";
+print "Current location: ".get_location($fe)."\n";
 
 
 

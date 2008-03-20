@@ -77,6 +77,9 @@ Net::FireEagle - access Yahoo's new FireEagle developer service
     # returns result on success. dies or returns undef on failure    
     my $return = $fe->update_location( "500 Third St., San Francisco, CA" );
 
+    # Find a location. Returns either xml or json
+    my $return = $fe->lookup_location( "Pensacola" );
+
 =head1 ABOUT
 
 Fire Eagle is a site that stores information about your location. With 
