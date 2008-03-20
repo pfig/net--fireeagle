@@ -222,34 +222,15 @@ immediately call C<location> or C<update_location>.
 
 =cut
 
-# TODO refactor these out into generic requests too
 sub request_access_token {
     my $self = shift;
     print "REQUESTING ACCESS TOKEN\n" if $DEBUG;
-    my $access_token_request = Net::OAuth::AccessTokenRequest->new(
-        consumer_key     => $self->{consumer_key},
-        consumer_secret  => $self->{consumer_secret},
-        request_url      => $ACCESS_TOKEN_URL,
-        request_method   => 'GET',
-        signature_method => $SIGNATURE_METHOD,
-        timestamp        => time,
-        nonce            => $self->_nonce,
+    my $access_token_response = $self->_make_request(
+        'Net::OAuth::AccessTokenRequest',
+        $ACCESS_TOKEN_URL, 'GET',
         token            => $self->{request_token},
         token_secret     => $self->{request_token_secret},
     );
-    $access_token_request->sign;
-
-    die "COULDN'T VERIFY! Check OAuth parameters.\n"
-      unless $access_token_request->verify;
-
-    # Construct request URL and send request via browser GET
-    my $access_token_request_url =
-      $ACCESS_TOKEN_URL . '?' . $access_token_request->to_post_body;
-    my $access_token_response =
-      $self->{browser}->get($access_token_request_url);
-
-    die $access_token_response->status_line
-      unless ( $access_token_response->is_success );
 
     # Cast response into CGI query for EZ parameter decoding
     my $access_token_response_query =
@@ -268,27 +249,10 @@ sub request_access_token {
 
 
 sub _request_request_token {
-    my $self                  = shift;
-    my $request_token_request = Net::OAuth::RequestTokenRequest->new(
-        consumer_key     => $self->{consumer_key},
-        consumer_secret  => $self->{consumer_secret},
-        request_url      => $REQUEST_TOKEN_URL,
-        request_method   => 'GET',
-        signature_method => $SIGNATURE_METHOD,
-        timestamp        => time,
-        nonce            => $self->_nonce,
-    );
-    $request_token_request->sign;
-
-    die "COULDN'T VERIFY! Check OAuth parameters.\n"
-      unless $request_token_request->verify;
-
-    # Construct request URL and send request via browser GET
-    # TODO - construct this using URI or something?
-    my $request_token_request_url =
-      $REQUEST_TOKEN_URL . '?' . $request_token_request->to_post_body;
-    my $request_token_response =
-      $self->{browser}->get($request_token_request_url);
+    my $self                   = shift;
+    my $request_token_response = $self->_make_request(
+        'Net::OAuth::RequestTokenRequest',
+        $REQUEST_TOKEN_URL, 'GET');
 
     die $request_token_response->status_line
       unless ( $request_token_response->is_success );
@@ -345,7 +309,7 @@ sub location {
        
     $url .= '.'.$opts{format} if defined $opts{format};
 
-    return $self->_make_request($url, 'GET');
+    return $self->_make_restricted_request($url, 'GET');
 }
 
 =head2 update_location <location> <opt[s]>
@@ -365,7 +329,7 @@ sub update_location {
        
     $url  .= '.'.$opts{format} if defined $opts{format};
     
-    return $self->_make_request($url, 'POST',  { address => $location, });
+    return $self->_make_restricted_request($url, 'POST',  { address => $location, });
 }
 
 =head lookup_location <query> <opt[s]>
@@ -380,25 +344,44 @@ depending on C<opts>.
 =cut
 
 sub lookup_location {
-	my $self  = shift;
-	my $query = shift;
-	my %opts  = @_;
+    my $self  = shift;
+    my $query = shift;
+    my %opts  = @_;
   
     my $url = $LOOKUP_API_URL; 
     
     $url .= '.'.$opts{format} if defined $opts{format};
     
-    return $self->_make_request($url, 'GET', { address => $query });
+    return $self->_make_restricted_request($url, 'GET', { address => $query });
+}
+
+sub _make_restricted_request {
+    my $self     = shift;
+
+    croak $UNAUTHORIZED unless $self->authorized;
+
+    my $url      = shift;
+    my $method   = shift;
+    my $extra    = shift || {};
+     my $response = $self->_make_request(
+        'Net::OAuth::ProtectedResourceRequest',
+        $url, $method, 
+        token            => $self->{access_token},
+        token_secret     => $self->{access_token_secret},
+        extra_params     => $extra,
+    );
+    return $response->content;
 }
 
 sub _make_request {
     my $self    = shift;
-    croak $UNAUTHORIZED unless $self->authorized;
 
+    my $class   = shift;
     my $url     = shift;
     my $method  = shift;
-    my $extra   = shift || {};
-    my $request = Net::OAuth::ProtectedResourceRequest->new(
+    my %extra   = @_;
+
+    my $request = $class->new(
         consumer_key     => $self->{consumer_key},
         consumer_secret  => $self->{consumer_secret},
         request_url      => $url,
@@ -406,9 +389,7 @@ sub _make_request {
         signature_method => $SIGNATURE_METHOD,
         timestamp        => time,
         nonce            => $self->_nonce,
-        token            => $self->{access_token},
-        token_secret     => $self->{access_token_secret},
-        extra_params     => $extra,
+        %extra,
     );
     $request->sign;
     die "COULDN'T VERIFY! Check OAuth parameters.\n"
@@ -419,9 +400,11 @@ sub _make_request {
     die $response->status_line
       unless ( $response->is_success );
 
-    return $response->content;
-
+    return $response;
 }
+
+
+
 
 =head1 RANDOMNESS
 
