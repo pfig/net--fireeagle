@@ -222,6 +222,7 @@ immediately call C<location> or C<update_location>.
 
 =cut
 
+# TODO refactor these out into generic requests too
 sub request_access_token {
     my $self = shift;
     print "REQUESTING ACCESS TOKEN\n" if $DEBUG;
@@ -339,20 +340,12 @@ Either 'xml' or 'json'. Defaults to 'xml'.
 sub location {
     my $self = shift;
     my %opts = @_;
-    die $UNAUTHORIZED unless $self->authorized;
-    my $base = $QUERY_API_URL; 
-       $base .= '.'.$opts{format} if defined $opts{format};
-    my $user_location_request = $self->_make_request($base, 'GET');
 
-    my $user_location_request_url =
-      $base . '?' . $user_location_request->to_post_body;
-    my $user_location_response =
-      $self->{browser}->get($user_location_request_url);
+    my $url = $QUERY_API_URL; 
+       
+    $url .= '.'.$opts{format} if defined $opts{format};
 
-    die $user_location_response->status_line
-      unless ( $user_location_response->is_success );
-
-    return $user_location_response->content;
+    return $self->_make_request($url, 'GET');
 }
 
 =head2 update_location <location> <opt[s]>
@@ -367,21 +360,12 @@ depending on C<opts>.
 # TODO make it so that update and lookup can take different location types
 sub update_location {
     my ( $self, $location, %opts ) = @_;
-    die $UNAUTHORIZED unless $self->authorized;
-    my $base  = $UPDATE_API_URL; 
-       $base .= '.'.$opts{format} if defined $opts{format};
-    my $update_location_request = $self->_make_request($base, 'POST',  { address => $location, });
-
-
-    my $update_location_request_url = $base;
-    my $update_location_response =
-      $self->{browser}
-      ->post( $update_location_request_url, $update_location_request->to_hash );
-
-    die $update_location_response->status_line
-      unless ( $update_location_response->is_success );
-
-    return $update_location_response->content;
+    
+    my $url  = $UPDATE_API_URL; 
+       
+    $url  .= '.'.$opts{format} if defined $opts{format};
+    
+    return $self->_make_request($url, 'POST',  { address => $location, });
 }
 
 =head lookup_location <query> <opt[s]>
@@ -400,24 +384,17 @@ sub lookup_location {
 	my $query = shift;
 	my %opts  = @_;
   
-    die $UNAUTHORIZED unless $self->authorized;
-    my $base = $LOOKUP_API_URL; 
-       $base .= '.'.$opts{format} if defined $opts{format};
-    my $lookup_location_request = $self->_make_request($base, 'GET', { address => $query });
-
-    my $lookup_location_request_url =
-      $base . '?' . $lookup_location_request->to_post_body;
-    my $lookup_location_response =
-      $self->{browser}->get($lookup_location_request_url);
-
-    die $lookup_location_response->status_line
-      unless ( $lookup_location_response->is_success );
-
-    return $lookup_location_response->content;
+    my $url = $LOOKUP_API_URL; 
+    
+    $url .= '.'.$opts{format} if defined $opts{format};
+    
+    return $self->_make_request($url, 'GET', { address => $query });
 }
 
 sub _make_request {
     my $self    = shift;
+    croak $UNAUTHORIZED unless $self->authorized;
+
     my $url     = shift;
     my $method  = shift;
     my $extra   = shift || {};
@@ -437,7 +414,13 @@ sub _make_request {
     die "COULDN'T VERIFY! Check OAuth parameters.\n"
       unless $request->verify;
 
-    return $request;
+    my $request_url = $url . '?' . $request->to_post_body;
+    my $response    = $self->{browser}->get($request_url);
+    die $response->status_line
+      unless ( $response->is_success );
+
+    return $response->content;
+
 }
 
 =head1 RANDOMNESS
