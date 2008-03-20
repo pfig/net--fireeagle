@@ -340,22 +340,9 @@ sub location {
     my $self = shift;
     my %opts = @_;
     die $UNAUTHORIZED unless $self->authorized;
-    my $base = $QUERY_API_URL; $base .= '.'.$opts{format} if defined $opts{format};
-    my $user_location_request = Net::OAuth::ProtectedResourceRequest->new(
-        consumer_key     => $self->{consumer_key},
-        consumer_secret  => $self->{consumer_secret},
-        request_url      => $base,
-        request_method   => 'GET',
-        signature_method => $SIGNATURE_METHOD,
-        timestamp        => time,
-        nonce            => $self->_nonce,
-        token            => $self->{access_token},
-        token_secret     => $self->{access_token_secret},
-    );
-    $user_location_request->sign;
-
-    die "COULDN'T VERIFY! Check OAuth parameters.\n"
-      unless $user_location_request->verify;
+    my $base = $QUERY_API_URL; 
+       $base .= '.'.$opts{format} if defined $opts{format};
+    my $user_location_request = $self->_make_request($base, 'GET');
 
     my $user_location_request_url =
       $base . '?' . $user_location_request->to_post_body;
@@ -380,23 +367,10 @@ depending on C<opts>.
 sub update_location {
     my ( $self, $location, %opts ) = @_;
     die $UNAUTHORIZED unless $self->authorized;
-    my $base = $UPDATE_API_URL; $base .= '.'.$opts{format} if defined $opts{format};
-    my $update_location_request = Net::OAuth::ProtectedResourceRequest->new(
-        consumer_key     => $self->{consumer_key},
-        consumer_secret  => $self->{consumer_secret},
-        request_url      => $base,
-        request_method   => 'POST',
-        signature_method => $SIGNATURE_METHOD,
-        timestamp        => time,
-        nonce            => $self->_nonce,
-        token            => $self->{access_token},
-        token_secret     => $self->{access_token_secret},
-        extra_params     => { address => $location, }
-    );
-    $update_location_request->sign;
+    my $base  = $UPDATE_API_URL; 
+       $base .= '.'.$opts{format} if defined $opts{format};
+    my $update_location_request = $self->_make_request($base, 'POST',  { address => $location, });
 
-    die "COULDN'T VERIFY! Check OAuth parameters.\n"
-      unless $update_location_request->verify;
 
     my $update_location_request_url = $base;
     my $update_location_response =
@@ -407,6 +381,30 @@ sub update_location {
       unless ( $update_location_response->is_success );
 
     return $update_location_response->content;
+}
+
+sub _make_request {
+    my $self    = shift;
+    my $url     = shift;
+    my $method  = shift;
+    my $extra   = shift || {};
+    my $request = Net::OAuth::ProtectedResourceRequest->new(
+        consumer_key     => $self->{consumer_key},
+        consumer_secret  => $self->{consumer_secret},
+        request_url      => $url,
+        request_method   => $method,
+        signature_method => $SIGNATURE_METHOD,
+        timestamp        => time,
+        nonce            => $self->_nonce,
+        token            => $self->{access_token},
+        token_secret     => $self->{access_token_secret},
+        extra_params     => $extra,
+    );
+    $request->sign;
+    die "COULDN'T VERIFY! Check OAuth parameters.\n"
+      unless $request->verify;
+
+    return $request;
 }
 
 =head1 RANDOMNESS
@@ -427,9 +425,11 @@ http://svn.unixbeard.net/simon/Net-FireEagle
 
 =head1 AUTHOR
 
-Simon Wistow <swistow@sixapart.com>
+Originally by Marc Powell at Yahoo! Brickhouse.
 
-Based on work by Marc Powell at Yahoo! Brickhouse and Aaron Straup Cope
+Additional code from Aaron Straup Cope
+
+Updated and packaged by Simon Wistow <swistow@sixapart.com>
 
 =head1 COPYRIGHT
 
