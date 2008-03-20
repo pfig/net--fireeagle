@@ -1,0 +1,10 @@
+v0.8 ???
+  CPANify (docs, tests, Build.PL etc etc)
+  Refactor and simplify code
+  Add example fireeagle script
+  Add lookup_location method
+  Allow ability to use complicated locations
+  Use a Mersenne Twister for the nonce where possible
+
+v0.06 Wed 05 Mar 2008 12:00:00 PST
+  Initial release from Yahoo! Brickhouse
