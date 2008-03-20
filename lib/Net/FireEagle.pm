@@ -322,17 +322,25 @@ Takes a free form string with the new location.
 Return the result of the update in either xml or json
 depending on C<opts>.
 
+The location can either be a plain string or a hash reference containing
+location parameters as described in
+
+http://fireeagle.yahoo.net/developer/documentation/location#locparams
+
 =cut
 
-# TODO make it so that update and lookup can take different location types
 sub update_location {
-    my ( $self, $location, %opts ) = @_;
+    my $self     = shift;
+    my $location = shift;
+    my %opts     = @_;
+   
+    my $extras = $self->_munge_location($location);
     
     my $url  = $UPDATE_API_URL; 
        
     $url  .= '.'.$opts{format} if defined $opts{format};
     
-    return $self->_make_restricted_request($url, 'POST',  { address => $location, });
+    return $self->_make_restricted_request($url, 'POST', $extras);
 }
 
 =head lookup_location <query> <opt[s]>
@@ -344,18 +352,34 @@ the location parameter.
 Return the result of the update in either xml or json
 depending on C<opts>.
 
+The query can either be a plain string or a hash reference containing
+location parameters as described in
+
+http://fireeagle.yahoo.net/developer/documentation/location#locparams
+
 =cut
 
 sub lookup_location {
-    my $self  = shift;
-    my $query = shift;
-    my %opts  = @_;
+    my $self     = shift;
+    my $location = shift;
+    my %opts     = @_;
   
+    my $extras = $self->_munge_location($location);
+
     my $url = $LOOKUP_API_URL; 
     
     $url .= '.'.$opts{format} if defined $opts{format};
     
-    return $self->_make_restricted_request($url, 'GET', { address => $query });
+    return $self->_make_restricted_request($url, 'GET', $extras);
+}
+
+sub _munge_location {
+	my $self  = shift;
+    my $loc   = shift;
+    my $ref   = ref($loc);
+    return { address => $loc } if !defined $ref or "" eq $ref;
+    return $loc                if 'HASH' eq $ref;
+    die "Can't understand location parameter in the form of a $ref ref";  
 }
 
 sub _make_restricted_request {
