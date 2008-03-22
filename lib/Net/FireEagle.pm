@@ -100,7 +100,7 @@ http://fireeagle.yahoo.net/developer/documentation/getting_started
 but, in short you have to first get an API key from the FireEagle site. 
 Then using this consumer key and consumer secret you have to 
 authenticate the relationship between you and your user. See the script 
-C<fireagle-authorise> for an example of how to do this.
+C<fireagle> packaged with this module for an example of how to do this.
 
 
 =head1 METHODS
@@ -374,7 +374,7 @@ sub lookup_location {
 }
 
 sub _munge_location {
-	my $self  = shift;
+    my $self  = shift;
     my $loc   = shift;
     my $ref   = ref($loc);
     return { address => $loc } if !defined $ref or "" eq $ref;
@@ -431,8 +431,6 @@ sub _make_request {
 }
 
 
-
-
 =head1 RANDOMNESS
 
 If C<Math::Random::MT> is installed then any nonces
@@ -464,6 +462,10 @@ Copyright 2008 - Simon Wistow and Yahoo! Brickhouse
 Distributed under the same terms as Perl itself.
 
 See L<perlartistic> and L<perlgpl>.
+
+=head1 SEE ALSO
+
+L<Net::OAuth>
 
 =cut
 

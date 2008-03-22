@@ -44,6 +44,16 @@ or to search for a location
 or you can mix and match command line options and config file options
 (command line will always override config file).
 
+=head1 AUTHENTICATION AND USER TOKENS
+
+To use this script or the C<Net::FireEagle> module you'll need to 
+get an application key. This script will require a desktop typ key.
+
+The C<Net::FireEagle> documentation has more information on this but, 
+in short, read this page
+
+    http://fireeagle.yahoo.net/developer/documentation/getting_started
+
 =head1 ABOUT
 
 Fire Eagle is a site that stores information about your location. With 
@@ -55,7 +65,7 @@ information services, blog badges and stuff like that...
 
 You can find out more about it here
 
-https://fireeagle.yahoo.net/
+    https://fireeagle.yahoo.net/
 
 =cut
 
