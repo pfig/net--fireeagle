@@ -41,14 +41,14 @@ Net::FireEagle - access Yahoo's new FireEagle developer service
 
 
     # Set up Fire Eagle oauth
-    my $fe = Net::FireEagle::Client->new( consumer_key    => $consumer_key, 
-                                          consumer_secret => $consumer_secret );
+    my $fe  = Net::FireEagle->new( consumer_key    => $consumer_key, 
+                                   consumer_secret => $consumer_secret );
 
     # Resume previous Fire Eagle oauth, feed access token and secret
-    my $fe2 = Net::FireEagle::Client->new( consumer_key        => $consumer_key, 
-                                           consumer_secret     => $consumer_secret, 
-                                           access_token        => $access_token, 
-                                           access_token_secret => $access_token_secret );
+    my $fe2 = Net::FireEagle->new( consumer_key        => $consumer_key, 
+                                   consumer_secret     => $consumer_secret, 
+                                   access_token        => $access_token, 
+                                   access_token_secret => $access_token_secret );
 
     # Send this to user to grant authorization for this app
     my $auth_url = $fe->authorization_url;
