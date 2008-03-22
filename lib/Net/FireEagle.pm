@@ -39,7 +39,6 @@ Net::FireEagle - access Yahoo's new FireEagle developer service
 
 =head2 SYNOPSIS
 
-
     # Set up Fire Eagle oauth
     my $fe  = Net::FireEagle->new( consumer_key    => $consumer_key, 
                                    consumer_secret => $consumer_secret );
@@ -86,13 +85,21 @@ For more information see http://fireeagle.yahoo.net/
 
 For more information read this
 
-http://fireeagle.yahoo.net/developer/documentation/getting_started
+    http://fireeagle.yahoo.net/developer/documentation/getting_started
 
 but, in short you have to first get an API key from the FireEagle site. 
 Then using this consumer key and consumer secret you have to 
 authenticate the relationship between you and your user. See the script 
 C<fireagle> packaged with this module for an example of how to do this.
 
+=head1 SIMPLE DAILY USAGE AND EXAMPLE CODE
+
+The script C<fireeagle> shipped with this module gives you really
+quick access to your FireEagle account - you can use it to simply 
+query and update your location.
+
+It also serves as a pretty good example of how to do desktop app
+authentication and how to use the API. 
 
 =head1 METHODS
 
