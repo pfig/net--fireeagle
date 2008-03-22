@@ -176,6 +176,33 @@ sub authorized {
     return 1;
 }
 
+=head2 consumer_key [consumer key]
+
+Returns the current consumer key. 
+
+Can optionally set the consumer key.
+
+=cut
+
+sub consumer_key {
+    my $self = shift;
+    $self->_access('consumer_key', $@);
+}
+
+=head2 consumer_secret [consumer secret]
+
+Returns the current consumer secret.
+
+Can optionally set the consumer secret.
+
+=cut
+
+sub consumer_secret {
+    my $self = shift;
+    $self->_access('consumer_secret', $@);
+}
+
+
 =head2 access_token [access_token]
 
 Returns the current access token.
@@ -186,8 +213,7 @@ Can optionally set a new token.
 
 sub access_token {
     my $self = shift;
-    $self->{access_token} = shift if $@;
-    return $self->{access_token};
+    $self->_access('access_token', $@);
 }
 
 
@@ -201,8 +227,14 @@ Can optionally set a new secret.
 
 sub access_token_secret {
     my $self = shift;
-    $self->{access_token_secret} = shift if $@;
-    return $self->{access_token_secret};
+    return $self->_access('access_token_secret', $@);
+}
+
+sub _access {
+    my $self = shift;
+    my $key  = shift;
+    $self->{$key} = shift if $@;
+    return $self->{$key};
 }
 
 # generate a random number 
