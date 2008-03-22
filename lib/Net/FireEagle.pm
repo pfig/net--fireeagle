@@ -2,7 +2,6 @@ package Net::FireEagle;
 
 # Client library for FireEagle
 use strict;
-use base qw/Class::Data::Inheritable Class::Accessor/;
 use LWP;
 use CGI;
 require Net::OAuth::Request;
@@ -30,17 +29,9 @@ our $LOOKUP_API_URL    = 'https://fireeagle.yahooapis.com/api/0.1/lookup';
 our $SIGNATURE_METHOD  = 'HMAC-SHA1';
 our $UNAUTHORIZED      = "Unauthorized.";
 
-__PACKAGE__->mk_classdata(
-    required_constructor_params => [qw(consumer_key consumer_secret)]
-);
-__PACKAGE__->mk_classdata(
-    access_token_params => [qw(access_token access_token_secret)]
-);
+our @required_constructor_params = qw(consumer_key consumer_secret);
+our @access_token_params         = qw(access_token access_token_secret);
 
-__PACKAGE__->mk_accessors(
-    @{ __PACKAGE__->required_constructor_params },
-    @{ __PACKAGE__->access_token_params },
-);
 
 =head1 NAME
 
@@ -155,7 +146,7 @@ sub new {
 # Validate required constructor params
 sub _check {
     my $self = shift;
-    foreach my $param ( @{ $self->required_constructor_params } ) {
+    foreach my $param ( @required_constructor_params ) {
         if ( not defined $self->{$param} ) {
             die "Missing required parameter '$param'";
         }
@@ -172,7 +163,7 @@ Note that the credentials may be wrong and so the request may still fail.
 
 sub authorized {
     my $self = shift;
-    foreach my $param ( @{ $self->access_token_params } ) {
+    foreach my $param ( @access_token_params ) {
         if ( not defined $self->{$param} ) { return 0; }
     }
     return 1;
