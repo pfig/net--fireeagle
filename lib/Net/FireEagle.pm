@@ -343,7 +343,7 @@ sub update_location {
     return $self->_make_restricted_request($url, 'POST', $extras);
 }
 
-=head lookup_location <query> <opt[s]>
+=head2 lookup_location <query> <opt[s]>
 
 Disambiguates potential values for update. Results from lookup can be 
 passed to update to ensure that Fire Eagle will understand how to parse 
