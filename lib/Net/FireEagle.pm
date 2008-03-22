@@ -323,7 +323,7 @@ depending on C<opts>.
 The location can either be a plain string or a hash reference containing
 location parameters as described in
 
-http://fireeagle.yahoo.net/developer/documentation/location#locparams
+    http://fireeagle.yahoo.net/developer/documentation/location#locparams
 
 =cut
 
@@ -353,7 +353,7 @@ depending on C<opts>.
 The query can either be a plain string or a hash reference containing
 location parameters as described in
 
-http://fireeagle.yahoo.net/developer/documentation/location#locparams
+    http://fireeagle.yahoo.net/developer/documentation/location#locparams
 
 =cut
 
@@ -443,7 +443,7 @@ Non known
 
 The latest code for this module can be found at
 
-http://svn.unixbeard.net/simon/Net-FireEagle
+    http://svn.unixbeard.net/simon/Net-FireEagle
 
 =head1 AUTHOR
 
