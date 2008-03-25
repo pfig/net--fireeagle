@@ -1,5 +1,6 @@
-v?.? ????
+v0.9 Tue 25 Mar 2008 17:29:02 GMT
   Fix some documentation errors
+  Fixed an error when POSTing
 
 v0.8 Tue 25 Mar 2008 00:49:04 GMT
   CPANify (docs, tests, Build.PL etc etc)
