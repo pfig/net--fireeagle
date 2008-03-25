@@ -479,11 +479,11 @@ The latest code for this module can be found at
 
 =head1 AUTHOR
 
-Originally by Marc Powell at Yahoo! Brickhouse.
+Original code by Yahoo! Brickhouse.
 
 Additional code from Aaron Straup Cope
 
-Updated and packaged by Simon Wistow <swistow@sixapart.com>
+Rewritten and packaged by Simon Wistow <swistow@sixapart.com>
 
 =head1 COPYRIGHT
 
