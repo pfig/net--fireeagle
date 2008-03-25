@@ -35,9 +35,9 @@ our @access_token_params         = qw(access_token access_token_secret);
 
 =head1 NAME
 
-Net::FireEagle - access Yahoo's new FireEagle developer service
+Net::FireEagle - access Yahoo's new FireEagle location service
 
-=head2 SYNOPSIS
+=head1 SYNOPSIS
 
     # Set up Fire Eagle oauth
     my $fe  = Net::FireEagle->new( consumer_key    => $consumer_key, 

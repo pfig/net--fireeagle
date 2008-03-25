@@ -47,7 +47,7 @@ or you can mix and match command line options and config file options
 =head1 AUTHENTICATION AND USER TOKENS
 
 To use this script or the C<Net::FireEagle> module you'll need to 
-get an application key. This script will require a desktop typ key.
+get an application key. This script will require a desktop type key.
 
 The C<Net::FireEagle> documentation has more information on this but, 
 in short, read this page
