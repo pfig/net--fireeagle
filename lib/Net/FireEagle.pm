@@ -287,7 +287,7 @@ sub _request_request_token {
         'Net::OAuth::RequestTokenRequest',
         $REQUEST_TOKEN_URL, 'GET');
 
-    die $request_token_response->status_line
+    die "GET for $REQUEST_TOKEN_URL failed: ".$request_token_response->status_line
       unless ( $request_token_response->is_success );
 
     # Cast response into CGI query for EZ parameter decoding
@@ -454,7 +454,7 @@ sub _make_request {
 
     my $request_url = $url . '?' . $request->to_post_body;
     my $response    = $self->{browser}->$method($request_url);
-    die $response->status_line
+    die "$method on $request_url failed: ".$response->status_line
       unless ( $response->is_success );
 
     return $response;
