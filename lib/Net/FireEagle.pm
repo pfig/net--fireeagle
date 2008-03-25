@@ -435,14 +435,14 @@ sub _make_request {
 
     my $class   = shift;
     my $url     = shift;
-    my $method  = shift;
+    my $method  = lc(shift);
     my %extra   = @_;
 
     my $request = $class->new(
         consumer_key     => $self->{consumer_key},
         consumer_secret  => $self->{consumer_secret},
         request_url      => $url,
-        request_method   => $method,
+        request_method   => uc($method),
         signature_method => $SIGNATURE_METHOD,
         timestamp        => time,
         nonce            => $self->_nonce,
@@ -453,7 +453,7 @@ sub _make_request {
       unless $request->verify;
 
     my $request_url = $url . '?' . $request->to_post_body;
-    my $response    = $self->{browser}->get($request_url);
+    my $response    = $self->{browser}->$method($request_url);
     die $response->status_line
       unless ( $response->is_success );
 
