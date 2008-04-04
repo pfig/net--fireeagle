@@ -7,6 +7,7 @@ my $build = Module::Build
          script_files => [ 'bin/fireeagle' ],
          requires     => {
                           'LWP::UserAgent'           => '0',
+                          'Crypt::SSLeay'            => '0',
                           'CGI'                      => '0',
                           'JSON::Any'                => '0',
                           'Test::More'               => '0',
