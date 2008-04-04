@@ -1,5 +1,6 @@
 v?.? ??????????
   Doc bugs (Pedro Figueiredo)
+  Added request_token and request_token_secret for web apps (Pedro Figueiredo)
 
 v0.9 Tue 25 Mar 2008 17:29:02 GMT
   Fix some documentation errors

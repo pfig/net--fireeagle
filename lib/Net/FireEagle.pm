@@ -4,6 +4,7 @@ package Net::FireEagle;
 use strict;
 use LWP;
 use CGI;
+use Carp;
 require Net::OAuth::Request;
 require Net::OAuth::RequestTokenRequest;
 require Net::OAuth::AccessTokenRequest;
@@ -58,6 +59,13 @@ Net::FireEagle - access Yahoo's new FireEagle location service
     # Get them back
     my $access_token = $fe->access_token;
     my $access_token_secret = $fe->access_token_secret;
+
+    # in the case of a web app, you want to save the request tokens
+    # (and/or set them)
+    my $request_token = $fe->request_token;
+    my $request_token_secret = $fe->request_token_secret;
+    $fe->request_token( $request_token );
+    $fe->request_token_secret( $request_token_secret );
 
     # Can't query or update location without authorization
     my $loc = $fe->location;                     # returns xml
@@ -229,6 +237,37 @@ sub access_token_secret {
     my $self = shift;
     return $self->_access('access_token_secret', $@);
 }
+
+=head2 request_token [request_token]
+
+Returns the current request token.
+
+Can optionally set a new token.
+
+=cut
+
+sub request_token {
+    my $self = shift;
+    $self->_access( 'request_token', $@ );
+}
+
+
+=head2 request_token_secret [request_token_secret]
+
+Returns the current request token secret.
+
+Can optionally set a new secret.
+
+=cut
+
+sub request_token_secret {
+    my $self = shift;
+    return $self->_access( 'request_token_secret', $@ );
+}
+
+
+
+
 
 sub _access {
     my $self = shift;
