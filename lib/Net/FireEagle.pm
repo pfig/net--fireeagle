@@ -17,7 +17,7 @@ BEGIN {
     }
 }
 
-our $VERSION = '0.9';
+our $VERSION = '1.0';
 our $DEBUG   = 0;
 
 # FireEagle Endpoint URLs

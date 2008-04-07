@@ -1,6 +1,7 @@
-v?.? ??????????
+v1.0 Mon 7 Apr 2008 19:33:59 BST
   Doc bugs (Pedro Figueiredo)
   Added request_token and request_token_secret for web apps (Pedro Figueiredo)
+  Require Carp and Net::SSLeay
 
 v0.9 Tue 25 Mar 2008 17:29:02 GMT
   Fix some documentation errors
