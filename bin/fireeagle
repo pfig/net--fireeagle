@@ -150,8 +150,9 @@ sub fetch_config {
 
 sub error {
     my $msg = shift;
-    die "Usage: fireeagle <consumer key> <consumer secrets> [access token] [access token secret] [[location]]\n".
-        "$msg\n";
+    die "Usage: fireeagle consumer_key=<consumer key> consumer_secret=<consumer secret> [access_token=<access token>] [access_token_secret=<access token secret>] [command [opt[s]]\n";
+        "$msg\n"."\n\n".
+        "See man page for details: perldoc fireeagle or man fireeagle\n";
 }
 
 sub get_location {
