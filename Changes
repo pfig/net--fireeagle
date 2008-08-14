@@ -1,3 +1,6 @@
+v1.2 Thu 14 Aug 2008 01:23:46 BST
+  Fix the accessors (Brendan O'Connor)
+
 v1.1 Wed 30 Apr 2008 16:04:55 BST
   Make usage in bin/fireeagle be correct (Mark Fowler)
 

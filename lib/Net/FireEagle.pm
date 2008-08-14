@@ -17,7 +17,7 @@ BEGIN {
     }
 }
 
-our $VERSION = '1.1';
+our $VERSION = '1.2';
 our $DEBUG   = 0;
 
 # FireEagle Endpoint URLs
@@ -194,7 +194,7 @@ Can optionally set the consumer key.
 
 sub consumer_key {
     my $self = shift;
-    $self->_access('consumer_key', $@);
+    $self->_access('consumer_key', @_);
 }
 
 =head2 consumer_secret [consumer secret]
@@ -207,7 +207,7 @@ Can optionally set the consumer secret.
 
 sub consumer_secret {
     my $self = shift;
-    $self->_access('consumer_secret', $@);
+    $self->_access('consumer_secret', @_);
 }
 
 
@@ -221,7 +221,7 @@ Can optionally set a new token.
 
 sub access_token {
     my $self = shift;
-    $self->_access('access_token', $@);
+    $self->_access('access_token', @_);
 }
 
 
@@ -235,7 +235,7 @@ Can optionally set a new secret.
 
 sub access_token_secret {
     my $self = shift;
-    return $self->_access('access_token_secret', $@);
+    return $self->_access('access_token_secret', @_);
 }
 
 =head2 request_token [request_token]
@@ -248,7 +248,7 @@ Can optionally set a new token.
 
 sub request_token {
     my $self = shift;
-    $self->_access( 'request_token', $@ );
+    $self->_access( 'request_token', @_);
 }
 
 
@@ -262,7 +262,7 @@ Can optionally set a new secret.
 
 sub request_token_secret {
     my $self = shift;
-    return $self->_access( 'request_token_secret', $@ );
+    return $self->_access( 'request_token_secret', @_);
 }
 
 
@@ -272,7 +272,7 @@ sub request_token_secret {
 sub _access {
     my $self = shift;
     my $key  = shift;
-    $self->{$key} = shift if $@;
+    $self->{$key} = shift if @_;
     return $self->{$key};
 }
 

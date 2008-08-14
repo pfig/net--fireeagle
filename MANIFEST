@@ -4,6 +4,7 @@ Changes
 lib/Net/FireEagle.pm
 MANIFEST			This list of files
 t/00use.t
+t/01accessors.t
 t/pod-coverage.t
 t/pod.t
 Makefile.PL
